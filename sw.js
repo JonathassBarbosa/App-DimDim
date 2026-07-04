@@ -1,4 +1,4 @@
-const CACHE = 'dimdim-v1';
+const CACHE = 'no-verde-v1';
 const ASSETS = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -15,7 +15,9 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+  // Nunca cachear chamadas ao Apps Script (dados sempre precisam ser atuais)
   if (url.hostname.includes('script.google.com')) return;
+
   event.respondWith(
     caches.match(event.request).then((cached) => cached || fetch(event.request).catch(() => cached))
   );
