@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>DimDim</title>
+<meta name="theme-color" content="#0C8A54">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+:root{
+  --g1:#043D2B; --g2:#0C8A54; --g3:#8BE6B4;
+  --hero-gradient: linear-gradient(135deg, var(--g1) 0%, var(--g2) 55%, var(--g3) 130%);
+  --g:#0C8A54; --gd:#043D2B; --mint:#EAF7EE; --mint2:#D5F0DE;
+  --paper:#FBFDFB; --ink:#10241A; --soft:#7C8C82;
+  --red:#D6483B; --redl:#FDECEA;
+  --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--font-body);-webkit-tap-highlight-color:transparent;}
+body{min-height:100vh;position:relative;overflow-x:hidden;}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;margin:0;}
+button{font-family:var(--font-body);cursor:pointer;}
+input,select,textarea{font-family:var(--font-body);}
+
+/* marca d'agua gigante da logo */
+.watermark{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.05;display:flex;align-items:center;justify-content:center;}
+.watermark-logo{width:min(80vw,600px);height:auto;}
+
+.splash{position:fixed;inset:0;z-index:999;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;transition:opacity .6s ease;}
+.splash.fade{opacity:0;pointer-events:none;}
+.splash-logo{font-family:var(--font-display);font-weight:700;font-size:48px;color:var(--g);letter-spacing:-1px;}
+.brand-name span{display:inline-block;}
+.brand-name .d{animation:popD 1s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;}
+.brand-name .im{animation:scaleIm 1s ease-in-out infinite;}
+@keyframes popD{0%{transform:scale(1)}50%{transform:scale(1.3) translateY(-6px)}100%{transform:scale(1)}}
+@keyframes scaleIm{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}
+.splash-shadow{width:min(60vw,400px);height:12px;border-radius:50%;background:rgba(12,138,84,.15);margin:0 auto;filter:blur(2px);animation:shrink2 1s ease-in-out infinite alternate;}
+@keyframes shrink2{from{transform:scale(1)}to{transform:scale(.6)}}
+
+.app{position:relative;z-index:1;max-width:520px;margin:0 auto;padding-bottom:104px;}
+.scr{display:none;}
+.scr.active{display:block;animation:fadein .25s ease;}
+.scr-pad{padding:20px;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.sec-title{font-size:20px;margin-bottom:2px;}
+.sec-sub{font-size:12.5px;color:var(--soft);margin:0 0 18px;}
+
+/* hero */
+.hero{background:var(--hero-gradient);border-radius:0 0 28px 28px;padding:18px 20px 22px;color:#fff;position:relative;overflow:hidden;}
+.hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.hero-brand{display:flex;align-items:center;gap:9px;}
+.hero-brand img{width:30px;height:30px;border-radius:9px;display:block;}
+.hero-brand span{font-family:var(--font-display);font-weight:700;font-size:16px;}
+.hero-icons{display:flex;gap:8px;}
+.hero-icons button{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.18);border:none;color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.hero-label{font-size:12px;opacity:.85;font-weight:600;}
+.hero-value{font-family:var(--font-display);font-size:32px;font-weight:700;margin-top:3px;letter-spacing:-.5px;}
+.hero-sub{font-size:11px;opacity:.82;margin-top:5px;}
+
+.quick-row{display:flex;justify-content:space-between;padding:16px 16px 2px;gap:4px;}
+.quick-item{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;color:var(--ink);font-size:10.5px;font-weight:600;flex:1;}
+.quick-ic{width:46px;height:46px;border-radius:16px;background:var(--mint);display:flex;align-items:center;justify-content:center;font-size:19px;color:var(--gd);}
+.insight-card{margin:14px 20px 4px;background:var(--mint);border-radius:18px;padding:14px 16px;font-size:12.5px;color:var(--gd);font-weight:600;display:flex;align-items:center;gap:10px;line-height:1.4;}
+
+label{font-size:12.5px;font-weight:600;color:var(--soft);display:block;margin:16px 0 8px;}
+textarea,.field{width:100%;border-radius:16px;border:none;padding:13px 15px;font-size:14px;background:var(--mint);}
+textarea{min-height:56px;resize:vertical;}
+.row{display:flex;align-items:center;gap:10px;padding:12px 4px;}
+.chk{width:22px;height:22px;border-radius:7px;border:2px solid var(--mint2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;color:#fff;background:#fff;}
+.row.on .chk{background:var(--g);border-color:var(--g);}
+.r-name{font-size:14.5px;font-weight:600;flex:1;min-width:0;}
+.r-name.off{color:var(--red);}
+.r-meta{font-size:11.5px;color:var(--soft);font-weight:400;}
+.r-price{font-size:13.5px;font-weight:600;color:var(--soft);font-variant-numeric:tabular-nums;}
+
+.btn{display:block;width:100%;text-align:center;background:var(--g);color:#fff;border:none;border-radius:999px;padding:15px;font-weight:700;font-size:15px;font-family:var(--font-display);}
+.btn:disabled{background:var(--mint2);color:var(--soft);}
+.btn.gh{background:var(--mint);color:var(--gd);}
+.btn.mut{background:none;color:var(--soft);border:1.5px dashed var(--mint2);}
+.btn-row{display:flex;gap:10px;}
+.btn-row .btn{flex:1;}
+
+.date-card{background:#fff;border-radius:18px;margin-bottom:12px;overflow:hidden;box-shadow:0 1px 6px rgba(16,36,26,.05);}
+.date-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;cursor:pointer;}
+.date-title{font-size:14.5px;font-weight:700;}
+.date-sub{font-size:11.5px;color:var(--soft);margin-top:2px;}
+.date-tot{font-size:14px;font-weight:700;color:var(--gd);font-variant-numeric:tabular-nums;}
+.date-body{padding:0 18px 18px;}
+
+.pay-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0;}
+.pay-opt{background:var(--mint);border-radius:14px;padding:11px 4px;text-align:center;font-size:12.5px;font-weight:600;color:var(--soft);}
+.pay-opt.active{background:var(--g);color:#fff;}
+
+.chip-row{display:flex;gap:8px;margin-bottom:18px;background:var(--mint);border-radius:999px;padding:4px;}
+.chip{flex:1;text-align:center;padding:10px 4px;border-radius:999px;font-size:13px;font-weight:600;color:var(--soft);background:none;border:none;}
+.chip.active{background:var(--ink);color:#fff;}
+
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.stat{background:var(--mint);border-radius:18px;padding:15px;}
+.stat.wide{grid-column:1/3;background:var(--ink);}
+.stat.wide .lb{color:rgba(255,255,255,.55);}
+.stat.wide .vl{color:#fff;}
+.stat .lb{font-size:11.5px;color:var(--soft);font-weight:600;}
+.stat .vl{font-size:20px;font-weight:700;margin-top:4px;color:var(--gd);font-variant-numeric:tabular-nums;}
+
+.seg{display:flex;height:12px;border-radius:999px;overflow:hidden;margin:12px 0;}
+.seg-part{height:100%;}
+.rule-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;}
+.rule-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:8px;}
+.rule-lb{font-size:13.5px;font-weight:600;}
+.rule-vals{font-size:12.5px;color:var(--soft);font-weight:500;font-variant-numeric:tabular-nums;}
+
+.ocr-drop{background:var(--mint);border-radius:20px;padding:34px 18px;text-align:center;color:var(--gd);font-size:13.5px;font-weight:600;}
+.ocr-drop input{display:none;}
+
+.edit-row{display:flex;align-items:center;gap:8px;padding:10px 0;}
+.edit-row input{border:none;background:var(--mint);border-radius:12px;padding:9px 11px;font-size:13px;}
+.edit-row input.nm{flex:1;font-weight:600;}
+.edit-row input.vl{width:88px;text-align:right;font-weight:600;}
+.edit-row select{border:none;background:var(--mint);border-radius:12px;padding:9px 8px;font-size:12px;}
+
+.seclabel{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--soft);font-weight:700;margin:20px 0 10px;}
+.empty{text-align:center;color:var(--soft);font-size:13px;padding:20px 8px;}
+.warn{background:var(--redl);color:var(--red);border-radius:14px;padding:11px 15px;font-size:13px;font-weight:600;margin-bottom:12px;}
+.toast{position:fixed;left:50%;bottom:104px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:13.5px;font-weight:500;opacity:0;transition:opacity .3s;z-index:200;max-width:85%;text-align:center;}
+.toast.show{opacity:1;}
+.flash-overlay{position:fixed;inset:0;background:var(--red);opacity:0;pointer-events:none;z-index:998;}
+.flash-overlay.on{animation:flashRed 1.4s ease-in-out 2;}
+@keyframes flashRed{0%{opacity:0}20%{opacity:.5}40%{opacity:0}60%{opacity:.5}80%{opacity:0}100%{opacity:0}}
+
+/* nav */
+.tabbar{position:fixed;left:14px;right:14px;bottom:calc(10px + env(safe-area-inset-bottom));background:#fff;border-radius:999px;box-shadow:0 8px 26px rgba(16,36,26,.16);display:flex;justify-content:space-around;padding:9px 4px;z-index:90;max-width:492px;margin:0 auto;}
+.tabbtn{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--soft);font-size:9.5px;font-weight:600;padding:6px 4px;border-radius:14px;flex:1;}
+.tabbtn .ic{font-size:18px;}
+.tabbtn.active{color:var(--gd);background:var(--mint);}
+
+/* sheet registro */
+.sheet-overlay{position:fixed;inset:0;background:rgba(16,36,26,.4);z-index:150;display:none;align-items:flex-end;}
+.sheet-overlay.open{display:flex;}
+.sheet{background:var(--paper);width:100%;max-height:88vh;overflow-y:auto;border-radius:24px 24px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));animation:sheetUp .25s ease;}
+@keyframes sheetUp{from{transform:translateY(24px);opacity:.6}to{transform:translateY(0);opacity:1}}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.sheet-close{width:32px;height:32px;border-radius:50%;background:var(--mint);border:none;color:var(--gd);font-size:15px;flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<!-- marca d agua -->
+<div class="watermark">
+  <svg class="watermark-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="wm" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0C8A54"/><stop offset="100%" stop-color="#8BE6B4"/></linearGradient></defs>
+    <circle cx="100" cy="100" r="95" fill="url(#wm)" opacity="0.8"/>
+    <circle cx="75" cy="100" r="35" fill="none" stroke="#fff" stroke-width="4" opacity="0.6"/>
+    <circle cx="125" cy="100" r="28" fill="none" stroke="#fff" stroke-width="3" opacity="0.5"/>
+  </svg>
+</div>
+
+<!-- splash com animação -->
+<div class="splash" id="splash">
+  <svg width="120" height="120" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 8px 20px rgba(4,61,43,0.25))">
+    <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#043D2B"/><stop offset="55%" stop-color="#0C8A54"/><stop offset="100%" stop-color="#8BE6B4"/></linearGradient></defs>
+    <circle cx="100" cy="100" r="95" fill="url(#grad)"/>
+    <circle cx="75" cy="100" r="35" fill="none" stroke="#fff" stroke-width="6" opacity="0.9"/>
+    <circle cx="125" cy="100" r="28" fill="none" stroke="#fff" stroke-width="5" opacity="0.7"/>
+  </svg>
+  <div class="brand-name" style="font-size:36px"><span class="d">D</span><span class="im">im</span><span class="d">D</span><span class="im">im</span></div>
+  <div class="splash-shadow"></div>
+</div>
+
+<div class="flash-overlay" id="flashOverlay"></div>
+<div class="toast" id="toast"></div>
+
+<div class="app">
+
+<!-- HOME -->
+<div class="scr active" id="s-home">
+  <div class="hero">
+    <div class="hero-top">
+      <div class="hero-brand"><img src="icons/icon-192.png" alt=""><span>DimDim</span></div>
+      <div class="hero-icons">
+        <button id="btnToggleSaldo" type="button" aria-label="Mostrar ou esconder saldo">👁</button>
+        <button id="btnOpenRegistro" type="button" aria-label="Configurações">⚙️</button>
+      </div>
+    </div>
+    <div class="hero-label">Saldo livre do mês</div>
+    <div class="hero-value" id="heroSaldo">R$ 0,00</div>
+    <div class="hero-sub" id="heroSub">Configure a planilha em Registro</div>
+  </div>
+
+  <div class="quick-row">
+    <button class="quick-item" data-go="lista"><span class="quick-ic">📝</span>Lista</button>
+    <button class="quick-item" data-go="ocr"><span class="quick-ic">📷</span>Nota</button>
+    <button class="quick-item" data-go="hist"><span class="quick-ic">🕘</span>Histórico</button>
+    <button class="quick-item" data-go="painel"><span class="quick-ic">📊</span>Painel</button>
+  </div>
+
+  <div class="insight-card"><span>💡</span><span id="insightText">Carregando seus dados...</span></div>
+</div>
+
+<!-- LISTA -->
+<div class="scr" id="s-lista">
+  <div class="scr-pad">
+    <h2 class="sec-title">Minha lista</h2>
+    <p class="sec-sub">Itens salvos para comprar</p>
+    <label style="margin-top:0">Adicionar itens</label>
+    <textarea id="paste" placeholder="Arroz 5kg, Alimentação, 28.90"></textarea>
+    <button class="btn gh" style="margin-top:10px" id="btnAdd">Adicionar</button>
+    <div class="seclabel">Itens salvos</div>
+    <div id="catalog"></div>
+  </div>
+</div>
+
+<!-- OCR -->
+<div class="scr" id="s-ocr">
+  <div class="scr-pad">
+    <h2 class="sec-title">Nota fiscal</h2>
+    <p class="sec-sub">Fotografe e registre em segundos</p>
+    <label class="ocr-drop" for="fileInput" style="display:block;cursor:pointer">
+      <div style="font-size:26px">🧾</div>
+      <div style="margin-top:8px" id="ocrDropLabel">Fotografe a nota ou escolha um arquivo</div>
+      <input type="file" id="fileInput" accept="image/*" capture="environment">
+    </label>
+    <div id="ocrProgress"></div>
+    <div id="ocrResult"></div>
+  </div>
+</div>
+
+<!-- HISTÓRICO -->
+<div class="scr" id="s-hist">
+  <div class="scr-pad">
+    <h2 class="sec-title">Histórico</h2>
+    <p class="sec-sub">Compras por dia</p>
+    <div id="histList"></div>
+  </div>
+</div>
+
+<!-- PAINEL -->
+<div class="scr" id="s-painel">
+  <div class="scr-pad">
+    <h2 class="sec-title">Painel</h2>
+    <p class="sec-sub">Saldo livre e regra 50-30-20</p>
+    <div class="chip-row" id="periodChips">
+      <button class="chip" data-p="dia">Dia</button>
+      <button class="chip active" data-p="mes">Mês</button>
+      <button class="chip" data-p="ano">Ano</button>
+    </div>
+    <div id="painelAlert"></div>
+    <div class="stat-grid">
+      <div class="stat"><div class="lb">Receita</div><div class="vl" id="pIncome">R$ 0</div></div>
+      <div class="stat"><div class="lb">Gasto total</div><div class="vl" id="pSpent">R$ 0</div></div>
+      <div class="stat wide"><div class="lb">Saldo livre</div><div class="vl" id="pFree">R$ 0</div></div>
+    </div>
+    <div class="seclabel">Regra 50-30-20</div>
+    <div class="seg" id="ruleSeg"></div>
+    <div id="ruleRows"></div>
+    <div style="height:220px;position:relative;margin-top:14px"><canvas id="chart"></canvas></div>
+  </div>
+</div>
+
+</div>
+
+<!-- REGISTRO / STATUS -->
+<div class="sheet-overlay" id="registroOverlay">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h2>Status da Conexão</h2>
+      <button class="sheet-close" id="btnCloseRegistro" type="button">✕</button>
+    </div>
+    <p class="sec-sub">Seu app está conectado ao banco de dados do Google Sheets</p>
+
+    <div class="seclabel" style="margin-top:0">Banco de Dados</div>
+    <div id="connStatus" style="padding:16px;background:var(--mint);border-radius:16px;color:var(--gd);font-weight:600;text-align:center;font-size:14px;margin-bottom:16px">🔄 Testando conexão...</div>
+
+    <div class="seclabel">Categorias e orçamentos</div>
+    <div id="editCats"></div>
+
+    <div class="seclabel">Custos fixos</div>
+    <div id="editCustos"></div>
+
+    <div class="seclabel">Proventos</div>
+    <div id="editProventos"></div>
+
+    <button class="btn" style="margin-top:16px" id="btnSaveRegistro">Salvar mudanças na planilha</button>
+  </div>
+</div>
+
+<div class="tabbar">
+  <button class="tabbtn active" data-go="home"><span class="ic">🏠</span>Início</button>
+  <button class="tabbtn" data-go="lista"><span class="ic">📝</span>Lista</button>
+  <button class="tabbtn" data-go="ocr"><span class="ic">📷</span>Nota</button>
+  <button class="tabbtn" data-go="hist"><span class="ic">🕘</span>Histórico</button>
+  <button class="tabbtn" data-go="painel"><span class="ic">📊</span>Painel</button>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzbUT-Ml1f3wnyJezEULlNV-g0qr0QqEXRFcmralo7tO80p1IJIZdTs69bWG0Shk1QT/exec';
+const GRUPOS = ['Necessidade','Desejo','Investimento'];
+const LS = {catalog:'dd_catalog',saldoVisivel:'dd_saldo_visivel'};
+function loadJSON(k,f){try{return JSON.parse(localStorage.getItem(k))??f;}catch(e){return f;}}
+function saveJSON(k,v){localStorage.setItem(k,JSON.stringify(v));}
+let catalog=loadJSON(LS.catalog,[]),lastLocation=null,selectedPayment=null,saldoVisivel=loadJSON(LS.saldoVisivel,true),lastHeroData=null;
+let cats=[{n:'Alimentação',v:800,g:'Necessidade'},{n:'Transporte',v:200,g:'Necessidade'},{n:'Contas Fixas',v:1900,g:'Necessidade'},{n:'Assinaturas',v:100,g:'Desejo'},{n:'Lazer',v:150,g:'Desejo'},{n:'Vestuário',v:100,g:'Desejo'},{n:'Cartão de Crédito',v:500,g:'Desejo'},{n:'Outros',v:100,g:'Desejo'}];
+let custos=[{n:'Aluguel',v:1500},{n:'Energia',v:232},{n:'Internet',v:100}];
+let proventos=[{n:'Salário',v:4585},{n:'Vale-alimentação',v:388}];
+function uid(){return'i'+Math.random().toString(36).slice(2,10);}
+function money(n){return'R$ '+(Number(n)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
+setTimeout(()=>{document.getElementById('splash').classList.add('fade');},1600);
+setTimeout(()=>{document.getElementById('splash').style.display='none';},2300);
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));document.getElementById('s-'+id).classList.add('active');document.querySelectorAll('.tabbtn').forEach(t=>t.classList.toggle('active',t.dataset.go===id));if(id==='home')refreshHero();if(id==='hist')renderHist();if(id==='painel')loadPainel();}
+function openRegistro(){document.getElementById('registroOverlay').classList.add('open');renderRegistro();}
+function closeRegistro(){document.getElementById('registroOverlay').classList.remove('open');}
+document.getElementById('btnOpenRegistro').addEventListener('click',openRegistro);
+document.getElementById('btnCloseRegistro').addEventListener('click',closeRegistro);
+function renderHero(data){const val=document.getElementById('heroSaldo');val.textContent=saldoVisivel?money(data.saldoLivre):'R$ ••••••';document.getElementById('heroSub').textContent=`Receita ${money(data.receita)} · Gastos ${money(data.gastoTotal)}`;lastHeroData=data;const insight=document.getElementById('insightText');if(data.grupos&&data.grupos.length){const pior=data.grupos.reduce((a,b)=>{const ra=a.meta>0?a.gasto/a.meta:0,rb=b.meta>0?b.gasto/b.meta:0;return rb>ra?b:a;});const pct=pior.meta>0?Math.round((pior.gasto/pior.meta)*100):0;if(pct>=100)insight.textContent=`Atenção: o grupo ${pior.grupo} já passou da meta do mês (${pct}%).`;else if(pct>=70)insight.textContent=`Você já usou ${pct}% da meta de ${pior.grupo} este mês.`;else insight.textContent='Seus gastos estão dentro do planejado este mês.';} else{insight.textContent='Configure a planilha em Registro para ver seus dados reais.';}}
+async function refreshHero(){try{const resp=await fetch(`${SCRIPT_URL}?action=painel&periodo=mes`);const data=await resp.json();if(data.ok)renderHero(data);}catch(e){renderHero({receita:0,gastoTotal:0,saldoLivre:0,grupos:[]});}}
+document.getElementById('btnToggleSaldo').addEventListener('click',()=>{saldoVisivel=!saldoVisivel;saveJSON(LS.saldoVisivel,saldoVisivel);if(lastHeroData)renderHero(lastHeroData);});
+document.getElementById('btnAdd').addEventListener('click',()=>{const raw=document.getElementById('paste').value.trim();if(!raw){toast('Cole ou digite algum item primeiro.');return;}raw.split('\n').map(l=>l.trim()).filter(Boolean).forEach(line=>{const parts=line.split(',').map(p=>p.trim());const name=parts[0];if(!name)return;const category=parts[1]||'Outros';let price=parts[2]?parseFloat(parts[2].replace(',','.')):0;if(isNaN(price))price=0;const existing=catalog.find(i=>i.name.toLowerCase()===name.toLowerCase());if(existing){existing.checked=true;if(price)existing.price=price;}else{catalog.push({id:uid(),name,category,price,checked:true,timesUsed:0});}});document.getElementById('paste').value='';saveJSON(LS.catalog,catalog);renderCatalog();toast('Item adicionado.');});
+function renderCatalog(){const box=document.getElementById('catalog');box.innerHTML='';if(catalog.length===0){box.innerHTML='<div class="empty">Sua lista está vazia. Adicione itens acima.</div>';return;}catalog.forEach(item=>{const row=document.createElement('div');row.className='row'+(item.checked?' on':'');row.innerHTML=`<div class="chk">${item.checked?'✓':''}</div><div class="r-name">${item.name}<div class="r-meta">${item.category}${item.timesUsed>0?' · comprado '+item.timesUsed+'x':''}</div></div><div class="r-price">${money(item.price)}</div>`;row.addEventListener('click',()=>{item.checked=!item.checked;saveJSON(LS.catalog,catalog);renderCatalog();});box.appendChild(row);});}
+renderCatalog();
+document.getElementById('fileInput').addEventListener('change',async(e)=>{const file=e.target.files[0];if(!file)return;const progress=document.getElementById('ocrProgress');const label=document.getElementById('ocrDropLabel');label.textContent='Lendo a nota...';progress.innerHTML='<div class="empty">Isso pode levar alguns segundos.</div>';try{const {data:{text}}=await Tesseract.recognize(file,'por');label.textContent='Fotografar ou enviar outra nota';progress.innerHTML='';processarTextoNota(text);}catch(err){progress.innerHTML='<div class="warn">Não consegui ler essa imagem. Tente uma foto mais nítida.</div>';label.textContent='Fotografe a nota ou escolha um arquivo';}});
+function processarTextoNota(text){const linhas=text.split('\n').map(l=>l.trim()).filter(Boolean);const itens=[];const regexPreco=/(\d{1,4}[.,]\d{2})\s*$/;linhas.forEach(linha=>{const m=linha.match(regexPreco);if(!m)return;const preco=parseFloat(m[1].replace(',','.'));let nome=linha.slice(0,m.index).trim();let qtd=1;const qm=nome.match(/^(\d+)\s*[xX]?\s+/);if(qm){qtd=parseInt(qm[1],10);nome=nome.slice(qm[0].length).trim();}nome=nome.replace(/^\d+\s*/,'').trim();if(nome.length<2)return;itens.push({name:nome,qty:qtd,price:preco});});renderOcrResult(itens);}
+function renderOcrResult(itens){const box=document.getElementById('ocrResult');if(itens.length===0){box.innerHTML='<div class="warn">Não encontrei itens com valores nessa imagem. Você pode ajustar manualmente ou tentar outra foto.</div>';return;}const selecionados=catalog.filter(c=>c.checked);const naoVieram=selecionados.filter(c=>!itens.some(i=>i.name.toLowerCase().includes(c.name.toLowerCase())||c.name.toLowerCase().includes(i.name.toLowerCase())));let html='<div class="seclabel">Itens reconhecidos — revise antes de confirmar</div>';itens.forEach((it,idx)=>{const estavaNaLista=selecionados.some(c=>c.name.toLowerCase().includes(it.name.toLowerCase())||it.name.toLowerCase().includes(c.name.toLowerCase()));it.inList=estavaNaLista;html+=`<div class="row"><div class="r-name${estavaNaLista?'':' off'}">${it.qty}x ${it.name}${estavaNaLista?'':' · fora da lista'}</div><div class="r-price">${money(it.qty*it.price)}</div></div>`;});if(naoVieram.length>0){html+=`<div class="warn">Da sua lista, não veio na nota: ${naoVieram.map(f=>f.name).join(', ')}</div>`;}html+='<div class="pay-grid" id="ocrPayGrid"><button class="pay-opt" data-p="Pix">Pix</button><button class="pay-opt" data-p="Débito">Débito</button><button class="pay-opt" data-p="Crédito">Crédito</button></div>';html+='<button class="btn" id="btnConfirmOcr" style="margin-top:10px">Confirmar e registrar</button>';box.innerHTML=html;let payOcr=null;box.querySelectorAll('#ocrPayGrid .pay-opt').forEach(o=>o.addEventListener('click',()=>{box.querySelectorAll('#ocrPayGrid .pay-opt').forEach(x=>x.classList.remove('active'));o.classList.add('active');payOcr=o.dataset.p;}));document.getElementById('btnConfirmOcr').addEventListener('click',async()=>{if(!payOcr){toast('Escolha a forma de pagamento.');return;}await enviarCompra(itens,payOcr);catalog.forEach(c=>c.checked=false);saveJSON(LS.catalog,catalog);toast('Compra da nota fiscal registrada.');go('hist');});
+}
+async function enviarCompra(items,paymentMethod){const now=new Date();const payload={action:'compra',purchaseId:uid(),date:now.toISOString().slice(0,10),time:now.toTimeString().slice(0,8),location:lastLocation,paymentMethod,items:items.map(i=>({name:i.name,category:i.category||'Outros',qty:i.qty||1,price:i.price||0,inList:i.inList!==false}))};try{const resp=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify(payload)});const data=await resp.json();if(data.ok&&data.alertas&&data.alertas.length>0){triggerBudgetAlert(data.alertas);}refreshHero();return data;}catch(e){toast('Não consegui enviar para a planilha agora.');return null;}}
+function triggerBudgetAlert(alertas){const overlay=document.getElementById('flashOverlay');overlay.classList.add('on');setTimeout(()=>overlay.classList.remove('on'),3000);playBeep();toast('Orçamento estourado em: '+alertas.map(a=>a.categoria).join(', '));}
+function playBeep(){try{const ctx=new (window.AudioContext||window.webkitAudioContext)();[0,0.35,0.7].forEach(t=>{const o=ctx.createOscillator();const g=ctx.createGain();o.type='square';o.frequency.value=880;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(0.0001,ctx.currentTime+t);g.gain.exponentialRampToValueAtTime(0.25,ctx.currentTime+t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+t+0.25);o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+0.3);});}catch(e){}}
+let history=[{date:'Hoje',items:[],open:true,done:false}];let payHoje=null;
+function renderHist(){const box=document.getElementById('histList');box.innerHTML='';history.forEach((h,idx)=>{const isToday=idx===0;const selected=isToday?catalog.filter(c=>c.checked):h.items;const total=isToday?selected.reduce((s,i)=>s+(i.price||0),0):h.items.reduce((s,i)=>s+i.qty*i.price,0);const card=document.createElement('div');card.className='date-card';card.innerHTML=`<div class="date-head" data-idx="${idx}"><div><div class="date-title">${h.date}${isToday?' · em aberto':''}</div><div class="date-sub">${isToday?selected.length:h.items.length} itens</div></div><div style="display:flex;align-items:center;gap:8px"><span class="date-tot">${money(total)}</span><span>${h.open?'▲':'▼'}</span></div></div>`;if(h.open){const body=document.createElement('div');body.className='date-body';if(isToday){if(selected.length===0){body.innerHTML='<div class="empty">Nenhum item selecionado ainda hoje. Marque itens na sua Lista.</div>';}else{body.innerHTML=selected.map(i=>`<div class="row"><div class="r-name">${i.name}</div><div class="r-price">${money(i.price)}</div></div>`).join('');body.innerHTML+='<div class="pay-grid" id="payHojeGrid"><button class="pay-opt" data-p="Pix">Pix</button><button class="pay-opt" data-p="Débito">Débito</button><button class="pay-opt" data-p="Crédito">Crédito</button></div>';body.innerHTML+='<button class="btn gh" id="btnLoc" type="button">📍 Usar minha localização</button><div id="locStatus" style="margin-top:6px"></div>';body.innerHTML+='<button class="btn" id="btnFinishToday" style="margin-top:10px">Finalizar</button>';}}else{body.innerHTML=h.items.map(i=>`<div class="row"><div class="r-name${i.inList?'':' off'}">${i.qty}x ${i.name}${i.inList?'':' · fora da lista'}</div><div class="r-price">${money(i.qty*i.price)}</div></div>`).join('')+`<div class="r-meta" style="margin-top:8px">Pagamento: ${h.pay}</div>`;}card.appendChild(body);}card.querySelector('.date-head').addEventListener('click',()=>{h.open=!h.open;renderHist();});box.appendChild(card);});const payGrid=document.getElementById('payHojeGrid');if(payGrid){payGrid.querySelectorAll('.pay-opt').forEach(o=>o.addEventListener('click',(e)=>{e.stopPropagation();payGrid.querySelectorAll('.pay-opt').forEach(x=>x.classList.remove('active'));o.classList.add('active');payHoje=o.dataset.p;}));}const btnLoc=document.getElementById('btnLoc');if(btnLoc){btnLoc.addEventListener('click',(e)=>{e.stopPropagation();const status=document.getElementById('locStatus');status.textContent='Obtendo localização...';if(!navigator.geolocation){status.textContent='Geolocalização não suportada';return;}navigator.geolocation.getCurrentPosition(pos=>{lastLocation={lat:pos.coords.latitude,lng:pos.coords.longitude};status.textContent=`📍 ${lastLocation.lat.toFixed(4)}, ${lastLocation.lng.toFixed(4)}`;},()=>{status.textContent='Não foi possível obter localização';},{timeout:8000});});}const btnFin=document.getElementById('btnFinishToday');if(btnFin){btnFin.addEventListener('click',async(e)=>{e.stopPropagation();if(!payHoje){toast('Escolha a forma de pagamento.');return;}const sel=catalog.filter(c=>c.checked);if(sel.length===0){toast('Selecione itens na Lista primeiro.');return;}btnFin.textContent='Enviando...';btnFin.disabled=true;const items=sel.map(i=>({name:i.name,category:i.category,qty:1,price:i.price,inList:true}));await enviarCompra(items,payHoje);sel.forEach(i=>{i.timesUsed=(i.timesUsed||0)+1;i.checked=false;});saveJSON(LS.catalog,catalog);history.splice(1,0,{date:'Hoje',items,open:false,done:true,pay:payHoje});history[0]={date:'Hoje',items:[],open:true,done:false};payHoje=null;lastLocation=null;toast('Compra registrada!');renderHist();});}}
+document.querySelectorAll('#periodChips .chip').forEach(c=>c.addEventListener('click',()=>{document.querySelectorAll('#periodChips .chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');loadPainel(c.dataset.p);}));
+let chartInst=null;
+async function loadPainel(periodo){periodo=periodo||'mes';const alertBox=document.getElementById('painelAlert');alertBox.innerHTML='';try{const resp=await fetch(`${SCRIPT_URL}?action=painel&periodo=${periodo}`);const data=await resp.json();if(!data.ok){alertBox.innerHTML=`<div class="warn">Erro: ${data.error}</div>`;return;}renderPainel(data);}catch(e){alertBox.innerHTML='<div class="warn">Não foi possível carregar o painel agora. Verifique sua conexão.</div>';}}
+function renderPainel(data){document.getElementById('pIncome').textContent=money(data.receita);document.getElementById('pSpent').textContent=money(data.gastoTotal);document.getElementById('pFree').textContent=money(data.saldoLivre);const alertBox=document.getElementById('painelAlert');if(data.alertas&&data.alertas.length>0){alertBox.innerHTML=`<div class="warn">Orçamento estourado: ${data.alertas.map(a=>a.categoria).join(', ')}</div>`;}const colors={Necessidade:'#0C8A54',Desejo:'#5FCB92',Investimento:'#B9EDD1'};const seg=document.getElementById('ruleSeg');const total=data.grupos.reduce((s,g)=>s+g.gasto,0)||1;seg.innerHTML=data.grupos.map(g=>`<div class="seg-part" style="width:${(g.gasto/total)*100}%;background:${colors[g.grupo]||'#ccc'}"></div>`).join('');const rows=document.getElementById('ruleRows');rows.innerHTML=data.grupos.map(g=>{const pctIdeal=data.receita>0?Math.round((g.meta/data.receita)*100):0;return`<div class="rule-row"><div><span class="rule-dot" style="background:${colors[g.grupo]||'#ccc'}"></span><span class="rule-lb">${g.grupo} (${pctIdeal}% ideal)</span></div><div class="rule-vals">${money(g.gasto)} / ${money(g.meta)}</div></div>`;}).join('');const ctx=document.getElementById('chart');if(chartInst)chartInst.destroy();chartInst=new Chart(ctx,{type:'bar',data:{labels:data.grupos.map(g=>g.grupo),datasets:[{label:'Gasto',data:data.grupos.map(g=>Math.round(g.gasto)),backgroundColor:'#0C8A54',borderRadius:6},{label:'Meta',data:data.grupos.map(g=>Math.round(g.meta)),backgroundColor:'#B9EDD1',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true}}}});}
+async function testConnection(){const status=document.getElementById('connStatus');status.innerHTML='🔄 Testando conexão...';try{const resp=await fetch(`${SCRIPT_URL}?action=categorias`);const data=await resp.json();if(data.ok){status.innerHTML=`<span style="color:var(--gd);font-weight:600">✓ Conectado<br><span style="font-size:12px;font-weight:400;margin-top:4px;display:block">${data.categorias.length} categorias sincronizadas</span></span>`;}else{status.innerHTML=`<span style="color:var(--red)">✗ Erro: ${data.error}</span>`;}}catch(e){status.innerHTML='<span style="color:var(--red)">✗ Não foi possível conectar. Verifique sua conexão de internet.</span>';}}
+document.getElementById('btnOpenRegistro').addEventListener('click',testConnection);
+function renderEditCats(){const box=document.getElementById('editCats');box.innerHTML='';cats.forEach(item=>{const row=document.createElement('div');row.className='edit-row';row.innerHTML=`<input class="nm" value="${item.n}"><select>${GRUPOS.map(g=>`<option ${g===item.g?'selected':''}>${g}</option>`).join('')}</select><input class="vl" value="${item.v}">`;row.querySelector('.nm').addEventListener('change',e=>item.n=e.target.value);row.querySelector('select').addEventListener('change',e=>item.g=e.target.value);row.querySelector('.vl').addEventListener('change',e=>item.v=parseFloat(e.target.value)||0);box.appendChild(row);});const addBtn=document.createElement('button');addBtn.className='btn mut';addBtn.style.marginTop='6px';addBtn.textContent='Adicionar categoria';addBtn.addEventListener('click',()=>{cats.push({n:'Nova categoria',v:0,g:'Necessidade'});renderEditCats();});box.appendChild(addBtn);}
+function renderEditSimple(target,list,placeholder){const box=document.getElementById(target);box.innerHTML='';list.forEach(item=>{const row=document.createElement('div');row.className='edit-row';row.innerHTML=`<input class="nm" value="${item.n}"><input class="vl" value="${item.v}">`;row.querySelector('.nm').addEventListener('change',e=>item.n=e.target.value);row.querySelector('.vl').addEventListener('change',e=>item.v=parseFloat(e.target.value)||0);box.appendChild(row);});const addBtn=document.createElement('button');addBtn.className='btn mut';addBtn.style.marginTop='6px';addBtn.textContent=placeholder;addBtn.addEventListener('click',()=>{list.push({n:'Novo item',v:0});renderEditSimple(target,list,placeholder);});box.appendChild(addBtn);}
+function renderRegistro(){renderEditCats();renderEditSimple('editCustos',custos,'Adicionar custo fixo');renderEditSimple('editProventos',proventos,'Adicionar provento');}
+document.getElementById('btnSaveRegistro').addEventListener('click',async()=>{const btn=document.getElementById('btnSaveRegistro');btn.textContent='Salvando...';btn.disabled=true;try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'categorias',categorias:cats})});await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'custosFixos',itens:custos})});await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'proventos',itens:proventos})});toast('Mudanças salvas na planilha.');refreshHero();}catch(e){toast('Não consegui salvar agora. Tente novamente.');}btn.textContent='Salvar mudanças na planilha';btn.disabled=false;});
+refreshHero();
+// Teste de conexão automático ao iniciar (mostra na tela de Status)
+setTimeout(()=>{testConnection();},2400);
+if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
+</script>
+</body>
+</html>
