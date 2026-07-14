@@ -13,6 +13,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.pluggy.ai/pluggy-connect/v2.8.2/pluggy-connect.js"></script>
 <style>
 :root{
   --g1:#043D2B; --g2:#0C8A54; --g3:#8BE6B4;
@@ -159,7 +161,7 @@ textarea{min-height:56px;resize:vertical;}
 .seclabel{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--soft);font-weight:700;margin:20px 0 10px;}
 .empty{text-align:center;color:var(--soft);font-size:13px;padding:20px 8px;}
 .warn{background:var(--redl);color:var(--red);border-radius:14px;padding:11px 15px;font-size:13px;font-weight:600;margin-bottom:12px;}
-.toast{position:fixed;left:50%;bottom:104px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:13.5px;font-weight:500;opacity:0;transition:opacity .3s;z-index:200;max-width:85%;text-align:center;}
+.toast{position:fixed;left:50%;bottom:104px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:13.5px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .3s;z-index:200;max-width:85%;text-align:center;}
 .toast.show{opacity:1;}
 .flash-overlay{position:fixed;inset:0;background:var(--red);opacity:0;pointer-events:none;z-index:998;}
 .flash-overlay.on{animation:flashRed 1.4s ease-in-out 2;}
@@ -178,6 +180,78 @@ textarea{min-height:56px;resize:vertical;}
 @keyframes sheetUp{from{transform:translateY(24px);opacity:.6}to{transform:translateY(0);opacity:1}}
 .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
 .sheet-close{width:32px;height:32px;border-radius:50%;background:var(--mint);border:none;color:var(--gd);font-size:15px;flex-shrink:0;}
+
+/* contas / cartões */
+.acc-card{background:#fff;border-radius:18px;padding:16px;margin-bottom:10px;box-shadow:0 1px 6px rgba(16,36,26,.05);display:flex;align-items:center;gap:12px;}
+.acc-card{cursor:pointer;}
+.acc-ic{width:44px;height:44px;border-radius:14px;background:var(--mint);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+.acc-ic.of{background:var(--g);color:#fff;}
+.acc-info{flex:1;min-width:0;}
+.acc-name{font-size:14.5px;font-weight:700;}
+.acc-meta{font-size:11.5px;color:var(--soft);margin-top:2px;}
+.acc-bal{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--gd);text-align:right;flex-shrink:0;}
+.acc-tag{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--g);background:var(--mint);padding:2px 7px;border-radius:999px;margin-top:4px;display:inline-block;}
+.acc-tag.of{color:#fff;background:var(--g);}
+
+.consolidated{background:var(--ink);color:#fff;border-radius:20px;padding:18px 20px;margin-bottom:16px;}
+.consolidated .lb{font-size:11.5px;color:rgba(255,255,255,.6);font-weight:600;}
+.consolidated .vl{font-family:var(--font-display);font-size:26px;font-weight:700;margin-top:4px;}
+
+/* NFC */
+.nfc-hero{background:var(--hero-gradient);border-radius:24px;padding:28px 20px;text-align:center;color:#fff;margin-bottom:18px;}
+.nfc-pulse{width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 12px;position:relative;}
+.nfc-pulse.scanning::before{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid rgba(255,255,255,.6);animation:nfcPulse 1.4s ease-out infinite;}
+@keyframes nfcPulse{0%{transform:scale(.9);opacity:1}100%{transform:scale(1.6);opacity:0}}
+.nfc-title{font-family:var(--font-display);font-size:17px;font-weight:700;}
+.nfc-sub{font-size:12px;opacity:.85;margin-top:4px;}
+.nfc-action{background:#fff;border-radius:18px;padding:16px;display:flex;align-items:center;gap:12px;margin-bottom:10px;box-shadow:0 1px 6px rgba(16,36,26,.05);border:none;width:100%;text-align:left;}
+.nfc-action .ic{width:42px;height:42px;border-radius:13px;background:var(--mint);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.nfc-action .tx{flex:1;min-width:0;}
+.nfc-action .tt{font-size:14px;font-weight:700;}
+.nfc-action .ds{font-size:11.5px;color:var(--soft);margin-top:2px;}
+.pixbox{background:#fff;border-radius:18px;padding:18px;text-align:center;margin-top:14px;}
+.pixbox textarea{width:100%;min-height:70px;font-size:11px;border-radius:12px;border:none;background:var(--mint);padding:10px;margin-top:10px;color:var(--gd);}
+#pixQr{display:flex;justify-content:center;margin:12px 0;}
+#pixQr img,#pixQr canvas{border-radius:12px;}
+
+/* contas a pagar */
+.bill-card{background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 6px rgba(16,36,26,.05);}
+.bill-card.overdue{border:1.5px solid var(--red);}
+.bill-info{flex:1;min-width:0;}
+.bill-name{font-size:14px;font-weight:700;}
+.bill-meta{font-size:11.5px;color:var(--soft);margin-top:2px;}
+.bill-meta.late{color:var(--red);font-weight:600;}
+.bill-val{font-size:14px;font-weight:700;color:var(--gd);flex-shrink:0;}
+.bill-pay{background:var(--g);color:#fff;border:none;border-radius:999px;padding:8px 14px;font-size:11.5px;font-weight:700;flex-shrink:0;}
+.bill-paid{background:var(--mint);color:var(--soft);border:none;border-radius:999px;padding:8px 14px;font-size:11.5px;font-weight:700;flex-shrink:0;}
+
+/* metas */
+.goal-card{background:#fff;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 1px 6px rgba(16,36,26,.05);}
+.goal-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.goal-ic{width:38px;height:38px;border-radius:12px;background:var(--mint);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.goal-name{font-size:14.5px;font-weight:700;flex:1;min-width:0;}
+.goal-pct{font-size:12.5px;font-weight:700;color:var(--g);flex-shrink:0;}
+.goal-bar{height:9px;border-radius:999px;background:var(--mint2);overflow:hidden;}
+.goal-bar-fill{height:100%;background:var(--g);border-radius:999px;}
+.goal-vals{display:flex;justify-content:space-between;font-size:11.5px;color:var(--soft);margin-top:6px;}
+.goal-add{background:var(--mint);color:var(--gd);border:none;border-radius:999px;padding:7px 14px;font-size:11.5px;font-weight:700;margin-top:10px;}
+
+/* home widgets */
+.home-widget{margin:14px 20px;background:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 1px 6px rgba(16,36,26,.05);}
+.home-widget h3{font-size:13px;margin-bottom:8px;}
+.hw-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;}
+.hw-row .n{font-weight:600;}
+.hw-row .v{color:var(--soft);font-variant-numeric:tabular-nums;}
+
+/* mais menu */
+.more-item{display:flex;align-items:center;gap:14px;padding:14px 4px;border-bottom:1px solid var(--mint);background:none;border-left:none;border-right:none;border-top:none;width:100%;text-align:left;}
+.more-item .ic{width:38px;height:38px;border-radius:12px;background:var(--mint);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.more-item .tt{font-size:14.5px;font-weight:600;flex:1;color:var(--ink);}
+
+.badge{background:var(--red);color:#fff;font-size:9.5px;font-weight:700;border-radius:999px;padding:1px 6px;margin-left:5px;}
+.pill-select{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;}
+.pill-select button{background:var(--mint);border:none;border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:600;color:var(--soft);}
+.pill-select button.active{background:var(--g);color:#fff;}
 </style>
 </head>
 <body>
@@ -223,11 +297,26 @@ textarea{min-height:56px;resize:vertical;}
   <div class="quick-row">
     <button class="quick-item" data-go="lista"><span class="quick-ic c1">📝</span>Lista</button>
     <button class="quick-item" data-go="ocr"><span class="quick-ic c2">📷</span>Nota</button>
-    <button class="quick-item" data-go="hist"><span class="quick-ic c3">🕘</span>Histórico</button>
-    <button class="quick-item" data-go="painel"><span class="quick-ic c4">📊</span>Painel</button>
+    <button class="quick-item" data-go="pagar"><span class="quick-ic c3">📅</span>Pagar</button>
+    <button class="quick-item" data-go="metas"><span class="quick-ic c4">🎯</span>Metas</button>
   </div>
 
   <div class="insight-card"><span>💡</span><span id="insightText">Carregando seus dados...</span></div>
+
+  <div class="home-widget" id="widgetContas" style="display:none">
+    <h3>Saldo em contas</h3>
+    <div class="hw-row"><span class="n">Total consolidado</span><span class="v" id="widgetSaldoContas">R$ 0,00</span></div>
+  </div>
+
+  <div class="home-widget" id="widgetPagar" style="display:none">
+    <h3>Próximos vencimentos</h3>
+    <div id="widgetPagarRows"></div>
+  </div>
+
+  <div class="home-widget" id="widgetMetas" style="display:none">
+    <h3>Metas</h3>
+    <div id="widgetMetasRows"></div>
+  </div>
 </div>
 
 <!-- LISTA -->
@@ -287,6 +376,72 @@ textarea{min-height:56px;resize:vertical;}
     <div class="seg" id="ruleSeg"></div>
     <div id="ruleRows"></div>
     <div style="height:220px;position:relative;margin-top:14px"><canvas id="chart"></canvas></div>
+    <button class="btn gh" id="btnVerHistorico" style="margin-top:16px">Ver histórico completo</button>
+  </div>
+</div>
+
+<!-- CONTAS -->
+<div class="scr" id="s-contas">
+  <div class="scr-pad">
+    <h2 class="sec-title">Contas e cartões</h2>
+    <p class="sec-sub">Saldo consolidado e conexão com bancos</p>
+    <div class="consolidated"><div class="lb">Saldo total em contas</div><div class="vl" id="saldoConsolidado">R$ 0,00</div></div>
+    <button class="btn gh" id="btnIrBancos" style="margin-bottom:16px">🏦 Conectar banco (Open Finance)</button>
+    <div class="seclabel" style="margin-top:0">Suas contas</div>
+    <div id="listaContas"></div>
+    <button class="btn mut" id="btnAddConta" style="margin-top:8px">+ Adicionar conta manual</button>
+    <div class="seclabel">Cartões de crédito</div>
+    <div id="listaCartoes"></div>
+    <button class="btn mut" id="btnAddCartao" style="margin-top:8px">+ Adicionar cartão</button>
+  </div>
+</div>
+
+<!-- NFC -->
+<div class="scr" id="s-nfc">
+  <div class="scr-pad">
+    <h2 class="sec-title">Pagar e receber por NFC</h2>
+    <p class="sec-sub">Aproxime o celular para registrar na hora</p>
+    <div class="nfc-hero">
+      <div class="nfc-pulse" id="nfcPulse">📲</div>
+      <div class="nfc-title" id="nfcStatusTitle">Verificando suporte a NFC...</div>
+      <div class="nfc-sub" id="nfcStatusSub">Recurso experimental — funciona em Android com Chrome e NFC ativado</div>
+    </div>
+    <button class="nfc-action" id="btnNfcPagar" type="button"><span class="ic">💳</span><span class="tx"><span class="tt">Pagar aproximando</span><span class="ds">Leia uma tag DimDim para registrar a despesa na hora</span></span></button>
+    <button class="nfc-action" id="btnNfcGravar" type="button"><span class="ic">🏷️</span><span class="tx"><span class="tt">Gravar tag de pagamento</span><span class="ds">Grave um gasto recorrente numa tag NFC em branco</span></span></button>
+    <button class="nfc-action" id="btnNfcReceber" type="button"><span class="ic">📥</span><span class="tx"><span class="tt">Receber com Pix</span><span class="ds">Gere seu código Pix e compartilhe por NFC ou QR Code</span></span></button>
+    <div id="nfcArea"></div>
+  </div>
+</div>
+
+<!-- CONTAS A PAGAR -->
+<div class="scr" id="s-pagar">
+  <div class="scr-pad">
+    <h2 class="sec-title">Contas a pagar</h2>
+    <p class="sec-sub">Não perca nenhum vencimento</p>
+    <div id="listaContasPagar"></div>
+    <button class="btn mut" id="btnAddContaPagar" style="margin-top:8px">+ Adicionar conta a pagar</button>
+  </div>
+</div>
+
+<!-- METAS -->
+<div class="scr" id="s-metas">
+  <div class="scr-pad">
+    <h2 class="sec-title">Metas</h2>
+    <p class="sec-sub">Guarde dinheiro para seus objetivos</p>
+    <div id="listaMetas"></div>
+    <button class="btn mut" id="btnAddMeta" style="margin-top:8px">+ Nova meta</button>
+  </div>
+</div>
+
+<!-- BANCOS / OPEN FINANCE -->
+<div class="scr" id="s-bancos">
+  <div class="scr-pad">
+    <h2 class="sec-title">Open Finance</h2>
+    <p class="sec-sub">Conecte seus bancos e traga saldo e extrato automaticamente, com segurança, via Pluggy.</p>
+    <div id="ofStatusBox" class="warn" style="display:none"></div>
+    <button class="btn" id="btnConectarBanco">🏦 Conectar novo banco</button>
+    <div class="seclabel">Bancos conectados</div>
+    <div id="listaConexoesOF"></div>
   </div>
 </div>
 
@@ -319,10 +474,112 @@ textarea{min-height:56px;resize:vertical;}
 
 <div class="tabbar">
   <button class="tabbtn active" data-go="home"><span class="ic">🏠</span>Início</button>
-  <button class="tabbtn" data-go="lista"><span class="ic">📝</span>Lista</button>
-  <button class="tabbtn" data-go="ocr"><span class="ic">📷</span>Nota</button>
-  <button class="tabbtn" data-go="hist"><span class="ic">🕘</span>Histórico</button>
+  <button class="tabbtn" data-go="contas"><span class="ic">🏦</span>Contas</button>
+  <button class="tabbtn" data-go="nfc"><span class="ic">📲</span>NFC</button>
   <button class="tabbtn" data-go="painel"><span class="ic">📊</span>Painel</button>
+  <button class="tabbtn" id="tabMais"><span class="ic">☰</span>Mais</button>
+</div>
+
+<!-- MAIS -->
+<div class="sheet-overlay" id="maisOverlay">
+  <div class="sheet">
+    <div class="sheet-head"><h2>Mais</h2><button class="sheet-close" id="btnCloseMais" type="button">✕</button></div>
+    <button class="more-item" data-go-mais="lista" type="button"><span class="ic">📝</span><span class="tt">Lista de compras</span></button>
+    <button class="more-item" data-go-mais="ocr" type="button"><span class="ic">📷</span><span class="tt">Nota fiscal</span></button>
+    <button class="more-item" data-go-mais="hist" type="button"><span class="ic">🕘</span><span class="tt">Histórico</span></button>
+    <button class="more-item" data-go-mais="pagar" type="button"><span class="ic">📅</span><span class="tt">Contas a pagar</span></button>
+    <button class="more-item" data-go-mais="metas" type="button"><span class="ic">🎯</span><span class="tt">Metas</span></button>
+    <button class="more-item" data-go-mais="bancos" type="button"><span class="ic">🏦</span><span class="tt">Bancos (Open Finance)</span></button>
+    <button class="more-item" id="moreRegistro" type="button" style="border-bottom:none"><span class="ic">⚙️</span><span class="tt">Categorias, custos e proventos</span></button>
+  </div>
+</div>
+
+<!-- FORM: conta -->
+<div class="sheet-overlay" id="formContaOverlay">
+  <div class="sheet">
+    <div class="sheet-head"><h2 id="formContaTitulo">Nova conta</h2><button class="sheet-close" data-close-form="formContaOverlay" type="button">✕</button></div>
+    <label style="margin-top:0">Nome</label><input class="field" id="fContaNome" placeholder="Conta corrente">
+    <label>Tipo</label>
+    <select class="field" id="fContaTipo"><option>Corrente</option><option>Poupança</option><option>Carteira</option><option>Investimento</option></select>
+    <label>Instituição</label><input class="field" id="fContaInst" placeholder="Nome do banco (opcional)">
+    <label>Saldo atual</label><input class="field" id="fContaSaldo" type="number" step="0.01" placeholder="0,00">
+    <button class="btn" id="btnSalvarConta" style="margin-top:16px">Salvar</button>
+    <button class="btn mut" id="btnExcluirConta" style="margin-top:10px;display:none">Excluir conta</button>
+  </div>
+</div>
+
+<!-- FORM: cartão -->
+<div class="sheet-overlay" id="formCartaoOverlay">
+  <div class="sheet">
+    <div class="sheet-head"><h2>Novo cartão</h2><button class="sheet-close" data-close-form="formCartaoOverlay" type="button">✕</button></div>
+    <label style="margin-top:0">Nome</label><input class="field" id="fCartaoNome" placeholder="Nubank, Inter...">
+    <label>Instituição</label><input class="field" id="fCartaoInst" placeholder="Opcional">
+    <label>Limite</label><input class="field" id="fCartaoLimite" type="number" step="0.01" placeholder="0,00">
+    <div class="btn-row">
+      <div style="flex:1"><label>Dia de fechamento</label><input class="field" id="fCartaoFechamento" type="number" min="1" max="31" placeholder="10"></div>
+      <div style="flex:1"><label>Dia de vencimento</label><input class="field" id="fCartaoVencimento" type="number" min="1" max="31" placeholder="17"></div>
+    </div>
+    <button class="btn" id="btnSalvarCartao" style="margin-top:16px">Salvar</button>
+    <button class="btn mut" id="btnExcluirCartao" style="margin-top:10px;display:none">Excluir cartão</button>
+  </div>
+</div>
+
+<!-- FORM: conta a pagar -->
+<div class="sheet-overlay" id="formPagarOverlay">
+  <div class="sheet">
+    <div class="sheet-head"><h2>Nova conta a pagar</h2><button class="sheet-close" data-close-form="formPagarOverlay" type="button">✕</button></div>
+    <label style="margin-top:0">Descrição</label><input class="field" id="fPagarDesc" placeholder="Aluguel, internet...">
+    <label>Categoria</label><select class="field" id="fPagarCat"></select>
+    <label>Valor</label><input class="field" id="fPagarValor" type="number" step="0.01" placeholder="0,00">
+    <label>Vencimento</label><input class="field" id="fPagarVenc" type="date">
+    <label>Recorrência</label>
+    <select class="field" id="fPagarRec"><option value="unica">Única</option><option value="mensal">Mensal</option></select>
+    <button class="btn" id="btnSalvarPagar" style="margin-top:16px">Salvar</button>
+  </div>
+</div>
+
+<!-- FORM: meta -->
+<div class="sheet-overlay" id="formMetaOverlay">
+  <div class="sheet">
+    <div class="sheet-head"><h2>Nova meta</h2><button class="sheet-close" data-close-form="formMetaOverlay" type="button">✕</button></div>
+    <label style="margin-top:0">Nome</label><input class="field" id="fMetaNome" placeholder="Viagem, reserva de emergência...">
+    <label>Valor alvo</label><input class="field" id="fMetaAlvo" type="number" step="0.01" placeholder="0,00">
+    <label>Prazo</label><input class="field" id="fMetaPrazo" type="date">
+    <button class="btn" id="btnSalvarMeta" style="margin-top:16px">Salvar</button>
+  </div>
+</div>
+
+<!-- FORM: aporte meta -->
+<div class="sheet-overlay" id="formAporteOverlay">
+  <div class="sheet">
+    <div class="sheet-head"><h2>Guardar dinheiro</h2><button class="sheet-close" data-close-form="formAporteOverlay" type="button">✕</button></div>
+    <label style="margin-top:0">Valor a guardar</label><input class="field" id="fAporteValor" type="number" step="0.01" placeholder="0,00">
+    <button class="btn" id="btnSalvarAporte" style="margin-top:16px">Confirmar</button>
+  </div>
+</div>
+
+<!-- FORM: NFC pagar (confirmar após leitura) -->
+<div class="sheet-overlay" id="formNfcPagarOverlay">
+  <div class="sheet">
+    <div class="sheet-head"><h2>Confirmar pagamento</h2><button class="sheet-close" data-close-form="formNfcPagarOverlay" type="button">✕</button></div>
+    <p class="sec-sub" id="nfcPagarOrigem" style="margin-top:0">Dados lidos da tag</p>
+    <label style="margin-top:0">Descrição</label><input class="field" id="fNfcDesc">
+    <label>Categoria</label><select class="field" id="fNfcCat"></select>
+    <label>Valor</label><input class="field" id="fNfcValor" type="number" step="0.01">
+    <button class="btn" id="btnConfirmarNfcPagar" style="margin-top:16px">Confirmar pagamento</button>
+  </div>
+</div>
+
+<!-- FORM: NFC gravar tag -->
+<div class="sheet-overlay" id="formNfcGravarOverlay">
+  <div class="sheet">
+    <div class="sheet-head"><h2>Gravar tag de pagamento</h2><button class="sheet-close" data-close-form="formNfcGravarOverlay" type="button">✕</button></div>
+    <label style="margin-top:0">Descrição</label><input class="field" id="fGravarDesc" placeholder="Café da esquina">
+    <label>Categoria</label><select class="field" id="fGravarCat"></select>
+    <label>Valor sugerido</label><input class="field" id="fGravarValor" type="number" step="0.01">
+    <button class="btn" id="btnGravarTag" style="margin-top:16px">Aproximar e gravar tag</button>
+    <div id="gravarStatus" style="margin-top:10px"></div>
+  </div>
 </div>
 
 <script>
@@ -341,12 +598,26 @@ function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t
 setTimeout(()=>{document.getElementById('splash').classList.add('fade');},3300);
 setTimeout(()=>{document.getElementById('splash').style.display='none';},3900);
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
-function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));document.getElementById('s-'+id).classList.add('active');document.querySelectorAll('.tabbtn').forEach(t=>t.classList.toggle('active',t.dataset.go===id));if(id==='home')refreshHero();if(id==='hist')renderHist();if(id==='painel')loadPainel();}
+function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));document.getElementById('s-'+id).classList.add('active');document.querySelectorAll('.tabbtn').forEach(t=>t.classList.toggle('active',t.dataset.go===id));if(id==='home')refreshHero();if(id==='hist')renderHist();if(id==='painel')loadPainel();if(id==='contas'){loadContas();loadCartoes();}if(id==='nfc')initNfcScreen();if(id==='pagar')loadContasPagar();if(id==='metas')loadMetas();if(id==='bancos')loadBancos();}
+document.getElementById('btnVerHistorico').addEventListener('click',()=>go('hist'));
+document.getElementById('tabMais').addEventListener('click',()=>document.getElementById('maisOverlay').classList.add('open'));
+document.getElementById('btnCloseMais').addEventListener('click',()=>document.getElementById('maisOverlay').classList.remove('open'));
+document.querySelectorAll('[data-go-mais]').forEach(b=>b.addEventListener('click',()=>{document.getElementById('maisOverlay').classList.remove('open');go(b.dataset.goMais);}));
+document.getElementById('moreRegistro').addEventListener('click',()=>{document.getElementById('maisOverlay').classList.remove('open');openRegistro();});
+document.querySelectorAll('[data-close-form]').forEach(b=>b.addEventListener('click',()=>document.getElementById(b.dataset.closeForm).classList.remove('open')));
 function openRegistro(){document.getElementById('registroOverlay').classList.add('open');renderRegistro();}
 function closeRegistro(){document.getElementById('registroOverlay').classList.remove('open');}
 document.getElementById('btnOpenRegistro').addEventListener('click',openRegistro);
 document.getElementById('btnCloseRegistro').addEventListener('click',closeRegistro);
-function renderHero(data){const val=document.getElementById('heroSaldo');val.textContent=saldoVisivel?money(data.saldoLivre):'R$ ••••••';document.getElementById('heroSub').textContent=`Receita ${money(data.receita)} · Gastos ${money(data.gastoTotal)}`;lastHeroData=data;const insight=document.getElementById('insightText');if(data.grupos&&data.grupos.length){const pior=data.grupos.reduce((a,b)=>{const ra=a.meta>0?a.gasto/a.meta:0,rb=b.meta>0?b.gasto/b.meta:0;return rb>ra?b:a;});const pct=pior.meta>0?Math.round((pior.gasto/pior.meta)*100):0;if(pct>=100)insight.textContent=`Atenção: o grupo ${pior.grupo} já passou da meta do mês (${pct}%).`;else if(pct>=70)insight.textContent=`Você já usou ${pct}% da meta de ${pior.grupo} este mês.`;else insight.textContent='Seus gastos estão dentro do planejado este mês.';} else{insight.textContent='Configure a planilha em Registro para ver seus dados reais.';}}
+function renderHero(data){const val=document.getElementById('heroSaldo');val.textContent=saldoVisivel?money(data.saldoLivre):'R$ ••••••';document.getElementById('heroSub').textContent=`Receita ${money(data.receita)} · Gastos ${money(data.gastoTotal)}`;lastHeroData=data;const insight=document.getElementById('insightText');if(data.grupos&&data.grupos.length){const pior=data.grupos.reduce((a,b)=>{const ra=a.meta>0?a.gasto/a.meta:0,rb=b.meta>0?b.gasto/b.meta:0;return rb>ra?b:a;});const pct=pior.meta>0?Math.round((pior.gasto/pior.meta)*100):0;if(pct>=100)insight.textContent=`Atenção: o grupo ${pior.grupo} já passou da meta do mês (${pct}%).`;else if(pct>=70)insight.textContent=`Você já usou ${pct}% da meta de ${pior.grupo} este mês.`;else insight.textContent='Seus gastos estão dentro do planejado este mês.';} else{insight.textContent='Configure a planilha em Registro para ver seus dados reais.';}
+  const wContas=document.getElementById('widgetContas');
+  if(data.saldoContas!==undefined && data.saldoContas!==0){wContas.style.display='block';document.getElementById('widgetSaldoContas').textContent=saldoVisivel?money(data.saldoContas):'R$ ••••••';}else{wContas.style.display='none';}
+  const wPagar=document.getElementById('widgetPagar');
+  if(data.proximasContas && data.proximasContas.length>0){wPagar.style.display='block';document.getElementById('widgetPagarRows').innerHTML=data.proximasContas.map(c=>`<div class="hw-row"><span class="n">${c.descricao}</span><span class="v">${money(c.valor)} · ${formatarData(c.vencimento)}</span></div>`).join('');}else{wPagar.style.display='none';}
+  const wMetas=document.getElementById('widgetMetas');
+  if(data.metas && data.metas.length>0){wMetas.style.display='block';document.getElementById('widgetMetasRows').innerHTML=data.metas.map(m=>{const pct=m.valorAlvo>0?Math.min(100,Math.round((m.valorAtual/m.valorAlvo)*100)):0;return`<div class="hw-row"><span class="n">${m.icone||'🎯'} ${m.nome}</span><span class="v">${pct}%</span></div>`;}).join('');}else{wMetas.style.display='none';}
+}
+function formatarData(d){if(!d)return'';const dt=new Date(d);if(isNaN(dt))return String(d);return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});}
 async function refreshHero(){try{const resp=await fetch(`${SCRIPT_URL}?action=painel&periodo=mes`);const data=await resp.json();if(data.ok)renderHero(data);}catch(e){renderHero({receita:0,gastoTotal:0,saldoLivre:0,grupos:[]});}}
 document.getElementById('btnToggleSaldo').addEventListener('click',()=>{saldoVisivel=!saldoVisivel;saveJSON(LS.saldoVisivel,saldoVisivel);if(lastHeroData)renderHero(lastHeroData);});
 document.getElementById('btnAdd').addEventListener('click',()=>{const raw=document.getElementById('paste').value.trim();if(!raw){toast('Cole ou digite algum item primeiro.');return;}raw.split('\n').map(l=>l.trim()).filter(Boolean).forEach(line=>{const parts=line.split(',').map(p=>p.trim());const name=parts[0];if(!name)return;const category=parts[1]||'Outros';let price=parts[2]?parseFloat(parts[2].replace(',','.')):0;if(isNaN(price))price=0;const existing=catalog.find(i=>i.name.toLowerCase()===name.toLowerCase());if(existing){existing.checked=true;if(price)existing.price=price;}else{catalog.push({id:uid(),name,category,price,checked:true,timesUsed:0});}});document.getElementById('paste').value='';saveJSON(LS.catalog,catalog);renderCatalog();toast('Item adicionado.');});
@@ -371,6 +642,316 @@ function renderEditCats(){const box=document.getElementById('editCats');box.inne
 function renderEditSimple(target,list,placeholder){const box=document.getElementById(target);box.innerHTML='';list.forEach(item=>{const row=document.createElement('div');row.className='edit-row';row.innerHTML=`<input class="nm" value="${item.n}"><input class="vl" value="${item.v}">`;row.querySelector('.nm').addEventListener('change',e=>item.n=e.target.value);row.querySelector('.vl').addEventListener('change',e=>item.v=parseFloat(e.target.value)||0);box.appendChild(row);});const addBtn=document.createElement('button');addBtn.className='btn mut';addBtn.style.marginTop='6px';addBtn.textContent=placeholder;addBtn.addEventListener('click',()=>{list.push({n:'Novo item',v:0});renderEditSimple(target,list,placeholder);});box.appendChild(addBtn);}
 function renderRegistro(){renderEditCats();renderEditSimple('editCustos',custos,'Adicionar custo fixo');renderEditSimple('editProventos',proventos,'Adicionar provento');}
 document.getElementById('btnSaveRegistro').addEventListener('click',async()=>{const btn=document.getElementById('btnSaveRegistro');btn.textContent='Salvando...';btn.disabled=true;try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'categorias',categorias:cats})});await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'custosFixos',itens:custos})});await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'proventos',itens:proventos})});toast('Mudanças salvas na planilha.');refreshHero();}catch(e){toast('Não consegui salvar agora. Tente novamente.');}btn.textContent='Salvar mudanças na planilha';btn.disabled=false;});
+
+/* ================= CONTAS E CARTÕES ================= */
+let contas=[],cartoes=[],editingContaId=null,editingCartaoId=null;
+function populateSelectCategorias(sel){sel.innerHTML=cats.map(c=>`<option>${c.n}</option>`).join('');}
+async function loadContas(){try{const r=await fetch(`${SCRIPT_URL}?action=contas`);const d=await r.json();if(d.ok)contas=d.contas;}catch(e){}renderContas();}
+async function loadCartoes(){try{const r=await fetch(`${SCRIPT_URL}?action=cartoes`);const d=await r.json();if(d.ok)cartoes=d.cartoes;}catch(e){}renderContas();}
+function renderContas(){
+  const total=contas.reduce((s,c)=>s+(Number(c.saldo)||0),0);
+  document.getElementById('saldoConsolidado').textContent=money(total);
+  const box=document.getElementById('listaContas');box.innerHTML='';
+  if(contas.length===0){box.innerHTML='<div class="empty">Nenhuma conta cadastrada ainda.</div>';}
+  contas.forEach(c=>{
+    const of=c.origem==='OpenFinance';
+    const el=document.createElement('div');el.className='acc-card';
+    el.innerHTML=`<div class="acc-ic${of?' of':''}">${of?'🏦':'👛'}</div><div class="acc-info"><div class="acc-name">${c.nome}</div><div class="acc-meta">${c.tipo||''}${c.instituicao?' · '+c.instituicao:''}</div><span class="acc-tag${of?' of':''}">${of?'Open Finance':'Manual'}</span></div><div class="acc-bal">${money(c.saldo)}</div>`;
+    el.addEventListener('click',()=>openFormConta(c));
+    box.appendChild(el);
+  });
+  const boxC=document.getElementById('listaCartoes');boxC.innerHTML='';
+  if(cartoes.length===0){boxC.innerHTML='<div class="empty">Nenhum cartão cadastrado ainda.</div>';}
+  cartoes.forEach(c=>{
+    const el=document.createElement('div');el.className='acc-card';
+    el.innerHTML=`<div class="acc-ic">💳</div><div class="acc-info"><div class="acc-name">${c.nome}</div><div class="acc-meta">Fecha dia ${c.diaFechamento} · Vence dia ${c.diaVencimento}</div></div><div class="acc-bal">${money(c.faturaAtual)}</div>`;
+    el.addEventListener('click',()=>openFormCartao(c));
+    boxC.appendChild(el);
+  });
+}
+function openFormConta(c){
+  editingContaId=c?c.id:null;
+  document.getElementById('formContaTitulo').textContent=c?'Editar conta':'Nova conta';
+  document.getElementById('fContaNome').value=c?c.nome:'';
+  document.getElementById('fContaTipo').value=c?c.tipo:'Corrente';
+  document.getElementById('fContaInst').value=c?(c.instituicao||''):'';
+  document.getElementById('fContaSaldo').value=c?c.saldo:'';
+  document.getElementById('btnExcluirConta').style.display=c?'block':'none';
+  document.getElementById('formContaOverlay').classList.add('open');
+}
+document.getElementById('btnAddConta').addEventListener('click',()=>openFormConta(null));
+document.getElementById('btnSalvarConta').addEventListener('click',async()=>{
+  const nome=document.getElementById('fContaNome').value.trim();
+  if(!nome){toast('Digite um nome para a conta.');return;}
+  const conta={id:editingContaId,nome,tipo:document.getElementById('fContaTipo').value,instituicao:document.getElementById('fContaInst').value.trim(),saldo:parseFloat(document.getElementById('fContaSaldo').value)||0};
+  try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'conta',conta})});toast('Conta salva.');document.getElementById('formContaOverlay').classList.remove('open');loadContas();refreshHero();}catch(e){toast('Não consegui salvar a conta agora.');}
+});
+document.getElementById('btnExcluirConta').addEventListener('click',async()=>{
+  if(!editingContaId)return;
+  try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'excluirConta',id:editingContaId})});toast('Conta excluída.');document.getElementById('formContaOverlay').classList.remove('open');loadContas();refreshHero();}catch(e){toast('Não consegui excluir agora.');}
+});
+document.getElementById('btnIrBancos').addEventListener('click',()=>go('bancos'));
+function openFormCartao(c){
+  editingCartaoId=c?c.id:null;
+  document.getElementById('fCartaoNome').value=c?c.nome:'';
+  document.getElementById('fCartaoInst').value=c?(c.instituicao||''):'';
+  document.getElementById('fCartaoLimite').value=c?c.limite:'';
+  document.getElementById('fCartaoFechamento').value=c?c.diaFechamento:'';
+  document.getElementById('fCartaoVencimento').value=c?c.diaVencimento:'';
+  document.getElementById('btnExcluirCartao').style.display=c?'block':'none';
+  document.getElementById('formCartaoOverlay').classList.add('open');
+}
+document.getElementById('btnAddCartao').addEventListener('click',()=>openFormCartao(null));
+document.getElementById('btnSalvarCartao').addEventListener('click',async()=>{
+  const nome=document.getElementById('fCartaoNome').value.trim();
+  if(!nome){toast('Digite um nome para o cartão.');return;}
+  const cartao={id:editingCartaoId,nome,instituicao:document.getElementById('fCartaoInst').value.trim(),limite:parseFloat(document.getElementById('fCartaoLimite').value)||0,diaFechamento:parseInt(document.getElementById('fCartaoFechamento').value)||1,diaVencimento:parseInt(document.getElementById('fCartaoVencimento').value)||10};
+  try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'cartao',cartao})});toast('Cartão salvo.');document.getElementById('formCartaoOverlay').classList.remove('open');loadCartoes();}catch(e){toast('Não consegui salvar o cartão agora.');}
+});
+document.getElementById('btnExcluirCartao').addEventListener('click',async()=>{
+  if(!editingCartaoId)return;
+  try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'excluirCartao',id:editingCartaoId})});toast('Cartão excluído.');document.getElementById('formCartaoOverlay').classList.remove('open');loadCartoes();}catch(e){toast('Não consegui excluir agora.');}
+});
+
+/* ================= CONTAS A PAGAR ================= */
+let contasPagar=[];
+async function loadContasPagar(){try{const r=await fetch(`${SCRIPT_URL}?action=contasPagar`);const d=await r.json();if(d.ok)contasPagar=d.itens;}catch(e){}renderContasPagar();}
+function renderContasPagar(){
+  const box=document.getElementById('listaContasPagar');box.innerHTML='';
+  if(contasPagar.length===0){box.innerHTML='<div class="empty">Nenhuma conta a pagar cadastrada.</div>';return;}
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const ordenadas=[...contasPagar].sort((a,b)=>new Date(a.vencimento)-new Date(b.vencimento));
+  ordenadas.forEach(c=>{
+    const venc=new Date(c.vencimento);
+    const atrasada=!c.pago&&venc<hoje;
+    const el=document.createElement('div');el.className='bill-card'+(atrasada?' overdue':'');
+    el.innerHTML=`<div class="bill-info"><div class="bill-name">${c.descricao}</div><div class="bill-meta${atrasada?' late':''}">${c.categoria} · Vence ${formatarData(c.vencimento)}${c.recorrente==='mensal'?' · mensal':''}</div></div><div class="bill-val">${money(c.valor)}</div>`;
+    const btn=document.createElement('button');
+    if(c.pago){btn.className='bill-paid';btn.textContent='Pago';btn.disabled=true;}
+    else{btn.className='bill-pay';btn.textContent='Pagar';btn.addEventListener('click',async()=>{btn.textContent='...';btn.disabled=true;try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'marcarPago',id:c.id})});toast('Conta paga e registrada como despesa.');loadContasPagar();refreshHero();}catch(e){toast('Não consegui registrar o pagamento.');btn.disabled=false;btn.textContent='Pagar';}});}
+    el.appendChild(btn);
+    box.appendChild(el);
+  });
+}
+document.getElementById('btnAddContaPagar').addEventListener('click',()=>{
+  document.getElementById('fPagarDesc').value='';document.getElementById('fPagarValor').value='';document.getElementById('fPagarVenc').value='';document.getElementById('fPagarRec').value='unica';
+  populateSelectCategorias(document.getElementById('fPagarCat'));
+  document.getElementById('formPagarOverlay').classList.add('open');
+});
+document.getElementById('btnSalvarPagar').addEventListener('click',async()=>{
+  const descricao=document.getElementById('fPagarDesc').value.trim();
+  const vencimento=document.getElementById('fPagarVenc').value;
+  if(!descricao||!vencimento){toast('Preencha descrição e vencimento.');return;}
+  const item={descricao,categoria:document.getElementById('fPagarCat').value,valor:parseFloat(document.getElementById('fPagarValor').value)||0,vencimento,recorrente:document.getElementById('fPagarRec').value};
+  try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'contaPagar',item})});toast('Conta a pagar salva.');document.getElementById('formPagarOverlay').classList.remove('open');loadContasPagar();refreshHero();}catch(e){toast('Não consegui salvar agora.');}
+});
+
+/* ================= METAS ================= */
+let metas=[],editingMetaId=null;
+async function loadMetas(){try{const r=await fetch(`${SCRIPT_URL}?action=metas`);const d=await r.json();if(d.ok)metas=d.itens;}catch(e){}renderMetas();}
+function renderMetas(){
+  const box=document.getElementById('listaMetas');box.innerHTML='';
+  if(metas.length===0){box.innerHTML='<div class="empty">Nenhuma meta cadastrada. Crie a primeira!</div>';return;}
+  metas.forEach(m=>{
+    const pct=m.valorAlvo>0?Math.min(100,Math.round((m.valorAtual/m.valorAlvo)*100)):0;
+    const el=document.createElement('div');el.className='goal-card';
+    el.innerHTML=`<div class="goal-top"><div class="goal-ic">${m.icone||'🎯'}</div><div class="goal-name">${m.nome}</div><div class="goal-pct">${pct}%</div></div><div class="goal-bar"><div class="goal-bar-fill" style="width:${pct}%"></div></div><div class="goal-vals"><span>${money(m.valorAtual)}</span><span>${money(m.valorAlvo)}${m.prazo?' · '+formatarData(m.prazo):''}</span></div>`;
+    const btn=document.createElement('button');btn.className='goal-add';btn.textContent='Guardar dinheiro';
+    btn.addEventListener('click',(e)=>{e.stopPropagation();editingMetaId=m.id;document.getElementById('fAporteValor').value='';document.getElementById('formAporteOverlay').classList.add('open');});
+    el.appendChild(btn);
+    box.appendChild(el);
+  });
+}
+document.getElementById('btnAddMeta').addEventListener('click',()=>{
+  document.getElementById('fMetaNome').value='';document.getElementById('fMetaAlvo').value='';document.getElementById('fMetaPrazo').value='';
+  document.getElementById('formMetaOverlay').classList.add('open');
+});
+document.getElementById('btnSalvarMeta').addEventListener('click',async()=>{
+  const nome=document.getElementById('fMetaNome').value.trim();
+  if(!nome){toast('Digite um nome para a meta.');return;}
+  const item={nome,valorAlvo:parseFloat(document.getElementById('fMetaAlvo').value)||0,valorAtual:0,prazo:document.getElementById('fMetaPrazo').value};
+  try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'meta',item})});toast('Meta criada.');document.getElementById('formMetaOverlay').classList.remove('open');loadMetas();}catch(e){toast('Não consegui salvar agora.');}
+});
+document.getElementById('btnSalvarAporte').addEventListener('click',async()=>{
+  const valor=parseFloat(document.getElementById('fAporteValor').value)||0;
+  if(valor<=0){toast('Digite um valor válido.');return;}
+  try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'aporteMeta',id:editingMetaId,valor})});toast('Valor guardado na meta!');document.getElementById('formAporteOverlay').classList.remove('open');loadMetas();refreshHero();}catch(e){toast('Não consegui registrar agora.');}
+});
+
+/* ================= NFC (Web NFC — experimental, Android/Chrome) ================= */
+function initNfcScreen(){
+  const supported='NDEFReader'in window;
+  document.getElementById('nfcStatusTitle').textContent=supported?'NFC disponível neste aparelho':'NFC não disponível aqui';
+  document.getElementById('nfcStatusSub').textContent=supported?'Toque numa opção abaixo e aproxime a tag do celular':'Funciona em Android, no Chrome, com NFC ativado. Você ainda pode gerar seu Pix e compartilhar por QR Code.';
+}
+document.getElementById('btnNfcPagar').addEventListener('click',async()=>{
+  const area=document.getElementById('nfcArea');
+  if(!('NDEFReader'in window)){area.innerHTML='<div class="warn">Este navegador não tem suporte a leitura NFC. Use o Chrome no Android.</div>';return;}
+  area.innerHTML='<div class="empty">Aproxime o celular da tag...</div>';
+  document.getElementById('nfcPulse').classList.add('scanning');
+  try{
+    const reader=new NDEFReader();
+    await reader.scan();
+    reader.onreading=(event)=>{
+      document.getElementById('nfcPulse').classList.remove('scanning');
+      let payload=null;
+      try{const record=event.message.records[0];const text=new TextDecoder(record.encoding||'utf-8').decode(record.data);payload=JSON.parse(text);}catch(e){}
+      area.innerHTML='';
+      populateSelectCategorias(document.getElementById('fNfcCat'));
+      if(payload&&payload.t==='dimdim-pay'){
+        document.getElementById('fNfcDesc').value=payload.n||'';
+        if(payload.c)document.getElementById('fNfcCat').value=payload.c;
+        document.getElementById('fNfcValor').value=payload.v||'';
+        document.getElementById('nfcPagarOrigem').textContent='Dados lidos da tag NFC';
+      }else{
+        document.getElementById('fNfcDesc').value='';
+        document.getElementById('fNfcValor').value='';
+        document.getElementById('nfcPagarOrigem').textContent='Tag lida sem dados de pagamento do DimDim — preencha manualmente';
+      }
+      document.getElementById('formNfcPagarOverlay').classList.add('open');
+    };
+    reader.onreadingerror=()=>{document.getElementById('nfcPulse').classList.remove('scanning');area.innerHTML='<div class="warn">Não consegui ler essa tag. Tente novamente.</div>';};
+  }catch(e){document.getElementById('nfcPulse').classList.remove('scanning');area.innerHTML=`<div class="warn">Não foi possível ativar o NFC (${e.message||'permissão negada'}).</div>`;}
+});
+document.getElementById('btnConfirmarNfcPagar').addEventListener('click',async()=>{
+  const descricao=document.getElementById('fNfcDesc').value.trim()||'Pagamento por NFC';
+  const categoria=document.getElementById('fNfcCat').value;
+  const valor=parseFloat(document.getElementById('fNfcValor').value)||0;
+  if(valor<=0){toast('Digite um valor válido.');return;}
+  try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'transacaoNfc',tipo:'pagamento',descricao,categoria,valor})});toast('Pagamento por NFC registrado.');document.getElementById('formNfcPagarOverlay').classList.remove('open');refreshHero();}catch(e){toast('Não consegui registrar agora.');}
+});
+document.getElementById('btnNfcGravar').addEventListener('click',()=>{
+  if(!('NDEFReader'in window)){document.getElementById('nfcArea').innerHTML='<div class="warn">Este navegador não tem suporte a gravação NFC. Use o Chrome no Android.</div>';return;}
+  document.getElementById('fGravarDesc').value='';document.getElementById('fGravarValor').value='';
+  populateSelectCategorias(document.getElementById('fGravarCat'));
+  document.getElementById('gravarStatus').innerHTML='';
+  document.getElementById('formNfcGravarOverlay').classList.add('open');
+});
+document.getElementById('btnGravarTag').addEventListener('click',async()=>{
+  const descricao=document.getElementById('fGravarDesc').value.trim();
+  if(!descricao){toast('Digite uma descrição.');return;}
+  const payload={t:'dimdim-pay',n:descricao,c:document.getElementById('fGravarCat').value,v:parseFloat(document.getElementById('fGravarValor').value)||0};
+  const status=document.getElementById('gravarStatus');
+  status.innerHTML='<div class="empty">Aproxime uma tag NFC em branco...</div>';
+  try{
+    const writer=new NDEFReader();
+    await writer.write({records:[{recordType:'mime',mediaType:'application/json',data:JSON.stringify(payload)}]});
+    status.innerHTML='<div class="insight-card" style="margin:10px 0 0"><span>✅</span><span>Tag gravada! Aproxime dela para registrar esse gasto na hora.</span></div>';
+  }catch(e){status.innerHTML=`<div class="warn">Não consegui gravar a tag (${e.message||'tente novamente'}).</div>`;}
+});
+const LS_PIX='dd_pix_config';
+document.getElementById('btnNfcReceber').addEventListener('click',()=>{
+  const area=document.getElementById('nfcArea');
+  const cfg=loadJSON(LS_PIX,{chave:'',nome:'',cidade:''});
+  area.innerHTML=`<div class="pixbox">
+    <label style="margin-top:0">Sua chave Pix</label><input class="field" id="pixChave" placeholder="CPF, e-mail, telefone ou aleatória" value="${cfg.chave||''}">
+    <label>Seu nome (como no banco)</label><input class="field" id="pixNome" placeholder="Nome completo" value="${cfg.nome||''}">
+    <label>Cidade</label><input class="field" id="pixCidade" placeholder="Sua cidade" value="${cfg.cidade||''}">
+    <label>Valor a receber (opcional)</label><input class="field" id="pixValor" type="number" step="0.01" placeholder="0,00">
+    <button class="btn" id="btnGerarPix" style="margin-top:14px">Gerar código Pix</button>
+    <div id="pixResultado"></div>
+  </div>`;
+  document.getElementById('btnGerarPix').addEventListener('click',gerarPix);
+});
+function pixAscii(str){return(str||'').normalize('NFD').replace(new RegExp('[̀-ͯ]','g'),'').toUpperCase();}
+function pixField(id,value){return id+String(value.length).padStart(2,'0')+value;}
+function crc16ccitt(str){
+  let crc=0xFFFF;
+  for(let i=0;i<str.length;i++){
+    crc^=(str.charCodeAt(i)<<8);
+    for(let j=0;j<8;j++){crc=(crc&0x8000)?((crc<<1)^0x1021)&0xFFFF:(crc<<1)&0xFFFF;}
+  }
+  return crc.toString(16).toUpperCase().padStart(4,'0');
+}
+function montarPixCopiaCola(chave,nome,cidade,valor){
+  let p='';
+  p+=pixField('00','01');
+  p+=pixField('26',pixField('00','br.gov.bcb.pix')+pixField('01',chave));
+  p+=pixField('52','0000');
+  p+=pixField('53','986');
+  if(valor>0)p+=pixField('54',valor.toFixed(2));
+  p+=pixField('58','BR');
+  p+=pixField('59',pixAscii(nome).slice(0,25)||'DIMDIM');
+  p+=pixField('60',pixAscii(cidade).slice(0,15)||'SAO PAULO');
+  p+=pixField('62',pixField('05','***'));
+  p+='6304';
+  return p+crc16ccitt(p);
+}
+function gerarPix(){
+  const chave=document.getElementById('pixChave').value.trim();
+  const nome=document.getElementById('pixNome').value.trim();
+  const cidade=document.getElementById('pixCidade').value.trim();
+  const valor=parseFloat(document.getElementById('pixValor').value)||0;
+  if(!chave||!nome||!cidade){toast('Preencha chave, nome e cidade.');return;}
+  saveJSON(LS_PIX,{chave,nome,cidade});
+  const codigo=montarPixCopiaCola(chave,nome,cidade,valor);
+  const box=document.getElementById('pixResultado');
+  box.innerHTML='<div id="pixQr"></div><textarea readonly onclick="this.select()">'+codigo+'</textarea><div class="btn-row" style="margin-top:10px"><button class="btn gh" id="btnCopiarPix">Copiar código</button><button class="btn gh" id="btnGravarPix">Gravar em tag NFC</button></div><button class="btn" id="btnConfirmarRecebimento" style="margin-top:10px">Já recebi — registrar entrada</button>';
+  try{new QRCode(document.getElementById('pixQr'),{text:codigo,width:180,height:180,colorDark:'#043D2B',colorLight:'#ffffff'});}catch(e){document.getElementById('pixQr').innerHTML='<div class="empty">Não consegui gerar o QR agora. Use o código para copiar e colar.</div>';}
+  document.getElementById('btnCopiarPix').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(codigo);toast('Código Pix copiado.');}catch(e){toast('Não consegui copiar. Selecione o texto manualmente.');}});
+  document.getElementById('btnGravarPix').addEventListener('click',async()=>{
+    if(!('NDEFReader'in window)){toast('Gravação NFC não é suportada neste navegador.');return;}
+    try{const writer=new NDEFReader();await writer.write({records:[{recordType:'text',data:codigo}]});toast('Código Pix gravado na tag!');}catch(e){toast('Não consegui gravar a tag agora.');}
+  });
+  document.getElementById('btnConfirmarRecebimento').addEventListener('click',async()=>{
+    if(valor<=0){toast('Informe o valor recebido antes de confirmar.');return;}
+    try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'transacaoNfc',tipo:'recebimento',descricao:'Recebimento via Pix',valor})});toast('Recebimento registrado!');refreshHero();}catch(e){toast('Não consegui registrar agora.');}
+  });
+}
+
+/* ================= OPEN FINANCE (PLUGGY) ================= */
+let ofConexoes=[];
+async function loadBancos(){
+  const box=document.getElementById('ofStatusBox');box.style.display='none';
+  const btn=document.getElementById('btnConectarBanco');
+  try{
+    const r=await fetch(`${SCRIPT_URL}?action=openFinanceStatus`);
+    const d=await r.json();
+    if(!d.ok){box.style.display='block';box.textContent='Não consegui verificar o status do Open Finance agora.';return;}
+    if(!d.configurado){
+      box.style.display='block';
+      box.innerHTML='O Open Finance ainda não foi configurado no backend. Veja as instruções no topo do arquivo apps-script/Code.gs (chaves PLUGGY_CLIENT_ID e PLUGGY_CLIENT_SECRET) para ativar a conexão com bancos de verdade via Pluggy.';
+      btn.disabled=true;
+    }else{btn.disabled=false;}
+    ofConexoes=d.conexoes||[];
+    renderConexoesOF();
+  }catch(e){box.style.display='block';box.textContent='Não foi possível conectar ao backend agora.';}
+}
+function renderConexoesOF(){
+  const box=document.getElementById('listaConexoesOF');box.innerHTML='';
+  if(ofConexoes.length===0){box.innerHTML='<div class="empty">Nenhum banco conectado ainda.</div>';return;}
+  ofConexoes.forEach(c=>{
+    const el=document.createElement('div');el.className='acc-card';
+    el.innerHTML=`<div class="acc-ic of">🏦</div><div class="acc-info"><div class="acc-name">${c.Instituicao||'Banco conectado'}</div><div class="acc-meta">Conectado em ${formatarData(c.ConectadoEm)}</div></div>`;
+    const btn=document.createElement('button');btn.className='bill-pay';btn.style.background='var(--red)';btn.textContent='Desconectar';
+    btn.addEventListener('click',async(e)=>{e.stopPropagation();try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'pluggyDesconectar',itemId:c.ItemId})});toast('Banco desconectado.');loadBancos();}catch(err){toast('Não consegui desconectar agora.');}});
+    el.appendChild(btn);
+    box.appendChild(el);
+  });
+}
+document.getElementById('btnConectarBanco').addEventListener('click',async()=>{
+  const btn=document.getElementById('btnConectarBanco');
+  btn.textContent='Preparando conexão...';btn.disabled=true;
+  try{
+    const resp=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'pluggyConnectToken'})});
+    const data=await resp.json();
+    if(!data.ok){toast(data.error||'Open Finance não está configurado.');btn.textContent='🏦 Conectar novo banco';btn.disabled=false;return;}
+    const pluggyConnect=new PluggyConnect({
+      connectToken:data.connectToken,
+      includeSandbox:true,
+      onSuccess:async(itemData)=>{
+        toast('Banco conectado! Sincronizando...');
+        try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'pluggySync',itemId:itemData.item.id})});toast('Sincronizado! Suas contas e transações foram importadas.');}
+        catch(e){toast('Conectado, mas não consegui sincronizar agora. Tente de novo em instantes.');}
+        loadBancos();loadContas();refreshHero();
+      },
+      onError:()=>{toast('Não foi possível conectar o banco.');}
+    });
+    pluggyConnect.init();
+  }catch(e){toast('Não consegui iniciar a conexão agora.');}
+  btn.textContent='🏦 Conectar novo banco';btn.disabled=false;
+});
+
 refreshHero();
 // Teste de conexão automático ao iniciar (mostra na tela de Status)
 setTimeout(()=>{testConnection();},2400);

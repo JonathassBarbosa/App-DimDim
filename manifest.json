@@ -1,7 +1,7 @@
 {
   "name": "DimDim — seu dinheiro, sem enrolação",
   "short_name": "DimDim",
-  "description": "Lista de compras com memória, leitura de nota fiscal, histórico por data e painel com a regra 50-30-20.",
+  "description": "Contas, cartões, contas a pagar, metas, pagamento e recebimento por NFC e conexão Open Finance, além de lista de compras, nota fiscal e painel 50-30-20.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
